@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Access Dashboard · Insumos Médicos Chile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#080b10;
+    --bg-alt:#0c1017;
+    --panel:#10151d;
+    --panel-hover:#141b25;
+    --panel-border:#1d2530;
+    --panel-border-hover:#2a4a56;
+    --cyan:#00eaff;
+    --cyan-soft:#5df2ff;
+    --cyan-dim:#0891a8;
+    --text-hi:#eef2f6;
+    --text:#c3ccd6;
+    --text-dim:#7c8a9a;
+    --green:#34e0a1;
+    --amber:#ffc857;
+    --magenta:#ff6ea8;
+    --radius:14px;
+    --maxw:1180px;
+    --ease:cubic-bezier(.22,1,.36,1);
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(0,234,255,.08), transparent 60%),
+      radial-gradient(900px 500px at 90% 0%, rgba(255,110,168,.05), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter', system-ui, sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  ::selection{ background:var(--cyan); color:#04141a; }
+
+  h1,h2,h3,.disp{ font-family:'Space Grotesk', sans-serif; letter-spacing:-0.01em; }
+  .mono{ font-family:'JetBrains Mono', monospace; }
+
+  a{ color:inherit; }
+
+  /* ---------- top nav ---------- */
+  .topnav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(8,11,16,.78);
+    backdrop-filter:blur(14px) saturate(140%);
+    border-bottom:1px solid var(--panel-border);
+  }
+  .topnav-inner{
+    max-width:var(--maxw); margin:0 auto; padding:14px 24px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:700; font-size:15px; color:var(--text-hi); white-space:nowrap;}
+  .brand-dot{ width:9px; height:9px; border-radius:50%; background:var(--cyan); box-shadow:0 0 12px 2px rgba(0,234,255,.7); flex-shrink:0;}
+  .navlinks{ display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; }
+  .navlinks::-webkit-scrollbar{ display:none; }
+  .navlinks a{
+    font-size:12.5px; font-weight:600; color:var(--text-dim); text-decoration:none;
+    padding:8px 12px; border-radius:20px; white-space:nowrap; transition:all .25s var(--ease);
+    border:1px solid transparent;
+  }
+  .navlinks a:hover{ color:var(--cyan-soft); background:rgba(0,234,255,.06); border-color:rgba(0,234,255,.18);}
+  .navlinks a.active{ color:#04141a; background:var(--cyan); }
+
+  /* ---------- hero ---------- */
+  .hero{ max-width:var(--maxw); margin:0 auto; padding:64px 24px 40px; }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'JetBrains Mono', monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--cyan-soft); background:rgba(0,234,255,.07); border:1px solid rgba(0,234,255,.25);
+    padding:6px 14px; border-radius:20px; margin-bottom:22px;
+  }
+  .eyebrow::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--cyan); box-shadow:0 0 8px 1px var(--cyan);}
+  h1.title{
+    font-size:clamp(34px, 6vw, 60px); font-weight:700; line-height:1.04;
+    color:var(--cyan);
+    text-shadow:0 0 40px rgba(0,234,255,.35);
+    margin-bottom:20px;
+    max-width:16ch;
+  }
+  .subtitle{ font-size:clamp(15px,2.2vw,18px); color:var(--text); max-width:680px; margin-bottom:8px; }
+  .subtitle b{ color:var(--text-hi); font-weight:600;}
+  .tags{ display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; }
+  .tag{
+    font-size:12.5px; font-weight:600; color:var(--text-dim);
+    border:1px solid var(--panel-border); padding:6px 12px; border-radius:8px;
+    transition:all .3s var(--ease); background:var(--panel);
+  }
+  .tag:hover{ border-color:var(--panel-border-hover); color:var(--cyan-soft); transform:translateY(-2px); }
+
+  /* ---------- stat strip ---------- */
+  .stat-strip{
+    max-width:var(--maxw); margin:8px auto 0; padding:0 24px 8px;
+    display:grid; grid-template-columns:repeat(5,1fr); gap:12px;
+  }
+  @media(max-width:900px){ .stat-strip{ grid-template-columns:repeat(2,1fr);} }
+  .stat-card{
+    background:var(--panel); border:1px solid var(--panel-border); border-radius:var(--radius);
+    padding:20px 18px; position:relative; overflow:hidden;
+    transition:transform .35s var(--ease), border-color .35s var(--ease), box-shadow .35s var(--ease);
+  }
+  .stat-card::after{
+    content:''; position:absolute; inset:0; border-radius:var(--radius); padding:1px;
+    background:linear-gradient(135deg, rgba(0,234,255,.35), transparent 40%);
+    opacity:0; transition:opacity .35s var(--ease);
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none;
+  }
+  .stat-card:hover{ transform:translateY(-4px); border-color:var(--panel-border-hover); box-shadow:0 14px 34px -14px rgba(0,234,255,.25); }
+  .stat-card:hover::after{ opacity:1; }
+  .stat-num{ font-family:'JetBrains Mono', monospace; font-weight:700; font-size:clamp(22px,3.4vw,30px); color:var(--cyan-soft); display:block; margin-bottom:6px; }
+  .stat-label{ font-size:12px; color:var(--text-dim); line-height:1.4; }
+
+  /* ---------- section shell ---------- */
+  .section{ max-width:var(--maxw); margin:0 auto; padding:56px 24px 0; }
+  .section-head{ display:flex; align-items:baseline; gap:14px; margin-bottom:22px; }
+  .section-index{ font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--cyan-dim); font-weight:600; }
+  h2.section-title{ font-size:clamp(22px,3.2vw,30px); color:var(--text-hi); font-weight:600; }
+  .section-sub{ color:var(--text-dim); font-size:14.5px; margin:-10px 0 26px; max-width:64ch; }
+
+  /* ---------- accordion (collapsible) ---------- */
+  .acc{
+    border:1px solid var(--panel-border); border-radius:var(--radius); background:var(--panel);
+    margin-bottom:12px; overflow:hidden;
+    transition:border-color .3s var(--ease), box-shadow .3s var(--ease), transform .25s var(--ease);
+  }
+  .acc:hover{ border-color:var(--panel-border-hover); box-shadow:0 10px 30px -16px rgba(0,234,255,.22); transform:translateY(-2px); }
+  .acc-head{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:18px 20px; cursor:pointer; user-select:none; background:transparent;
+    transition:background .25s var(--ease);
+  }
+  .acc-head:hover{ background:var(--panel-hover); }
+  .acc-head-left{ display:flex; align-items:center; gap:14px; min-width:0; }
+  .acc-badge{
+    flex-shrink:0; width:38px; height:38px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(0,234,255,.08); border:1px solid rgba(0,234,255,.22);
+    color:var(--cyan-soft); font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px;
+    transition:all .3s var(--ease);
+  }
+  .acc:hover .acc-badge{ background:rgba(0,234,255,.16); box-shadow:0 0 16px -2px rgba(0,234,255,.5); }
+  .acc-titles{ min-width:0; }
+  .acc-title{ font-weight:600; color:var(--text-hi); font-size:15.5px; }
+  .acc-meta{ font-size:12.5px; color:var(--text-dim); margin-top:2px; }
+  .acc-chevron{
+    flex-shrink:0; width:26px; height:26px; border-radius:50%;
+    border:1px solid var(--panel-border); display:flex; align-items:center; justify-content:center;
+    transition:transform .4s var(--ease), border-color .3s var(--ease), background .3s var(--ease);
+  }
+  .acc.open .acc-chevron{ transform:rotate(180deg); border-color:var(--cyan); background:rgba(0,234,255,.1); }
+  .acc-chevron svg{ width:12px; height:12px; stroke:var(--text-dim); transition:stroke .3s var(--ease); }
+  .acc.open .acc-chevron svg{ stroke:var(--cyan-soft); }
+
+  .acc-panel{
+    max-height:0; opacity:0;
+    transition:max-height .5s var(--ease), opacity .4s ease, padding .4s var(--ease);
+    padding:0 20px;
+  }
+  .acc.open .acc-panel{ opacity:1; padding:0 20px 22px; }
+  .acc-body{ border-top:1px solid var(--panel-border); padding-top:16px; font-size:14.5px; color:var(--text); }
+  .acc-body p{ margin-bottom:12px; }
+  .acc-body ul{ list-style:none; margin:10px 0; }
+  .acc-body li{ position:relative; padding-left:18px; margin-bottom:8px; }
+  .acc-body li::before{ content:''; position:absolute; left:0; top:9px; width:6px; height:6px; border-radius:50%; background:var(--cyan-dim); }
+
+  .pill-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .pill{ font-size:11.5px; font-weight:600; padding:5px 10px; border-radius:6px; font-family:'JetBrains Mono',monospace; }
+  .pill.demand-high{ background:rgba(52,224,161,.12); color:var(--green); border:1px solid rgba(52,224,161,.3); }
+  .pill.demand-mid{ background:rgba(255,200,87,.12); color:var(--amber); border:1px solid rgba(255,200,87,.3); }
+  .pill.demand-niche{ background:rgba(255,110,168,.12); color:var(--magenta); border:1px solid rgba(255,110,168,.3); }
+  .pill.channel{ background:rgba(0,234,255,.08); color:var(--cyan-soft); border:1px solid rgba(0,234,255,.22); }
+
+  /* callout */
+  .callout{
+    border-left:3px solid var(--cyan); background:linear-gradient(90deg, rgba(0,234,255,.07), transparent 70%);
+    border-radius:0 var(--radius) var(--radius) 0; padding:18px 22px; margin:18px 0;
+  }
+  .callout .callout-label{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--cyan-soft); margin-bottom:8px; display:block; }
+  .callout p{ color:var(--text-hi); font-size:14.5px; }
+
+  /* ---------- comparison cards (market architecture) ---------- */
+  .compare-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media(max-width:780px){ .compare-grid{ grid-template-columns:1fr; } }
+  .compare-card{
+    background:var(--panel); border:1px solid var(--panel-border); border-radius:var(--radius); padding:24px;
+    transition:transform .35s var(--ease), border-color .35s var(--ease), box-shadow .35s var(--ease);
+  }
+  .compare-card:hover{ transform:translateY(-4px); border-color:var(--panel-border-hover); box-shadow:0 16px 36px -18px rgba(0,234,255,.3); }
+  .compare-tag{ display:inline-block; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; padding:5px 10px; border-radius:6px; margin-bottom:14px; }
+  .compare-card.pub .compare-tag{ background:rgba(0,234,255,.1); color:var(--cyan-soft); border:1px solid rgba(0,234,255,.28); }
+  .compare-card.priv .compare-tag{ background:rgba(255,110,168,.1); color:var(--magenta); border:1px solid rgba(255,110,168,.28); }
+  .compare-card h3{ font-size:19px; color:var(--text-hi); margin-bottom:14px; }
+  .compare-row{ display:flex; justify-content:space-between; gap:14px; padding:11px 0; border-top:1px solid var(--panel-border); font-size:13.5px; }
+  .compare-row:first-of-type{ border-top:none; }
+  .compare-row .k{ color:var(--text-dim); flex:0 0 40%; }
+  .compare-row .v{ color:var(--text); text-align:right; flex:1; }
+
+  /* ---------- roadmap columns ---------- */
+  .roadmap-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media(max-width:780px){ .roadmap-grid{ grid-template-columns:1fr; } }
+
+  /* ---------- timeline (program) ---------- */
+  .timeline{ position:relative; padding-left:28px; }
+  .timeline::before{ content:''; position:absolute; left:8px; top:6px; bottom:6px; width:2px; background:linear-gradient(var(--cyan), transparent 95%); opacity:.35; }
+  .tl-item{ position:relative; margin-bottom:14px; }
+  .tl-dot{ position:absolute; left:-28px; top:22px; width:16px; height:16px; border-radius:50%; background:var(--bg); border:2px solid var(--cyan-dim); transition:all .3s var(--ease); }
+  .acc.open .tl-dot{ border-color:var(--cyan); box-shadow:0 0 12px 1px rgba(0,234,255,.6); background:var(--cyan); }
+
+  /* ---------- KPI grid ---------- */
+  .kpi-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media(max-width:900px){ .kpi-grid{ grid-template-columns:1fr 1fr; } }
+  @media(max-width:560px){ .kpi-grid{ grid-template-columns:1fr; } }
+  .kpi-card{
+    background:var(--panel); border:1px solid var(--panel-border); border-radius:var(--radius);
+    padding:20px; transition:transform .35s var(--ease), border-color .35s var(--ease), box-shadow .35s var(--ease);
+  }
+  .kpi-card:hover{ transform:translateY(-4px) scale(1.01); border-color:var(--panel-border-hover); box-shadow:0 16px 36px -18px rgba(0,234,255,.3); }
+  .kpi-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .kpi-icon{
+    width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+    background:rgba(0,234,255,.09); border:1px solid rgba(0,234,255,.22); color:var(--cyan-soft);
+  }
+  .kpi-freq{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-dim); border:1px solid var(--panel-border); padding:3px 8px; border-radius:20px; }
+  .kpi-name{ font-weight:600; color:var(--text-hi); font-size:14.5px; margin-bottom:6px; }
+  .kpi-desc{ font-size:13px; color:var(--text-dim); }
+
+  /* ---------- synthesis strip ---------- */
+  .synth-list{ display:flex; flex-direction:column; gap:10px; }
+  .synth-item{
+    display:grid; grid-template-columns:170px 1fr; gap:18px; align-items:start;
+    background:var(--panel); border:1px solid var(--panel-border); border-radius:var(--radius);
+    padding:16px 20px; transition:transform .3s var(--ease), border-color .3s var(--ease);
+  }
+  @media(max-width:640px){ .synth-item{ grid-template-columns:1fr; gap:6px; } }
+  .synth-item:hover{ transform:translateX(4px); border-color:var(--panel-border-hover); }
+  .synth-name{ font-weight:700; color:var(--cyan-soft); font-size:14px; }
+  .synth-text{ font-size:14px; color:var(--text); }
+
+  /* CTA footer */
+  .cta{
+    max-width:var(--maxw); margin:56px auto 0; padding:0 24px;
+  }
+  .cta-box{
+    border-radius:20px; padding:36px 32px; text-align:center;
+    background:radial-gradient(600px 300px at 50% -30%, rgba(0,234,255,.16), transparent 70%), var(--panel);
+    border:1px solid rgba(0,234,255,.25);
+  }
+  .cta-box h3{ font-size:clamp(19px,2.6vw,25px); color:var(--text-hi); margin-bottom:10px; }
+  .cta-box p{ color:var(--text-dim); font-size:14px; max-width:60ch; margin:0 auto 20px; }
+  .cta-btn{
+    display:inline-flex; align-items:center; gap:8px; background:var(--cyan); color:#04141a;
+    font-weight:700; font-size:13.5px; padding:12px 24px; border-radius:10px; text-decoration:none;
+    transition:transform .3s var(--ease), box-shadow .3s var(--ease);
+  }
+  .cta-btn:hover{ transform:translateY(-3px); box-shadow:0 14px 30px -10px rgba(0,234,255,.55); }
+
+  footer{ text-align:center; color:var(--text-dim); font-size:12px; padding:40px 24px 30px; }
+  footer span{ color:var(--cyan-dim); }
+
+  @media(prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="brand"><span class="brand-dot"></span>MARKET&nbsp;ACCESS&nbsp;·&nbsp;CL</div>
+    <div class="navlinks" id="navlinks">
+      <a href="#resumen" class="active">Resumen</a>
+      <a href="#mercado">Mercado</a>
+      <a href="#portafolio">Portafolio</a>
+      <a href="#roadmap">Hoja de ruta</a>
+      <a href="#programa">Programa</a>
+      <a href="#kpis">KPIs</a>
+      <a href="#sintesis">Síntesis</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="eyebrow">Informe comercial · Market Access 2026</div>
+  <h1 class="title">Insumos médicos y farmacológicos en Chile</h1>
+  <p class="subtitle">Lectura ejecutiva de la oportunidad comercial en <b>suero fisiológico, anestesia inhalatoria, nutrición parenteral, vitaminas hospitalarias y matrices hemostáticas</b>, para los canales público (Fonasa/CENABAST) y privado (Isapres/clínicas).</p>
+  <div class="tags">
+    <span class="tag">5 líneas de producto</span>
+    <span class="tag">2 canales institucionales</span>
+    <span class="tag">Evidencia farmacoeconómica</span>
+    <span class="tag">Plan a 12 meses</span>
+  </div>
+</header>
+
+<div class="stat-strip">
+  <div class="stat-card"><span class="stat-num mono" data-count="6.75" data-suffix="%">0%</span><span class="stat-label">CAGR anestesia inhalatoria global 2025–2034</span></div>
+  <div class="stat-card"><span class="stat-num mono" data-count="12.7" data-prefix="USD " data-suffix=" M">USD 0 M</span><span class="stat-label">Compra coordinada NP · 17 hospitales (ChileCompra 2022)</span></div>
+  <div class="stat-card"><span class="stat-num mono" data-count="9" data-suffix="%">0%</span><span class="stat-label">Ahorro logrado vs. monto de referencia en NP</span></div>
+  <div class="stat-card"><span class="stat-num mono" data-static="65–80%">65–80%</span><span class="stat-label">Menor costo de NP domiciliaria vs. hospitalaria</span></div>
+  <div class="stat-card"><span class="stat-num mono" data-count="2.95" data-prefix="USD " data-suffix=" B">USD 0 B</span><span class="stat-label">Mercado global de anestesia inhalatoria proyectado a 2034</span></div>
+</div>
+
+<!-- RESUMEN -->
+<section class="section" id="resumen">
+  <div class="section-head"><span class="section-index">00</span><h2 class="section-title">Resumen ejecutivo</h2></div>
+  <p class="section-sub">La oportunidad no está en vender productos, está en resolver la prioridad real de cada comprador institucional.</p>
+
+  <div class="callout">
+    <span class="callout-label">Tesis comercial</span>
+    <p>El acceso a este mercado se gana con evidencia farmacoeconómica, no solo con precio. Las cinco líneas comparten un mismo comprador institucional — direcciones de abastecimiento, farmacia hospitalaria y comités farmacoterapéuticos — pero requieren estrategias diferenciadas de pricing, canal y evidencia.</p>
+  </div>
+
+  <div class="acc open" data-acc>
+    <div class="acc-head" data-acc-head>
+      <div class="acc-head-left">
+        <div class="acc-badge">01</div>
+        <div class="acc-titles">
+          <div class="acc-title">Hallazgos clave</div>
+          <div class="acc-meta">5 insights que orientan la asignación de esfuerzo comercial</div>
+        </div>
+      </div>
+      <div class="acc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div>
+    </div>
+    <div class="acc-panel">
+      <div class="acc-body">
+        <ul>
+          <li><b style="color:var(--text-hi)">Demanda de base amplia:</b> suero fisiológico y nutrición parenteral concentran los mayores volúmenes y la mayor presión por eficiencia de compra; son la puerta de entrada natural al comité de compras.</li>
+          <li><b style="color:var(--text-hi)">Anestesia inhalatoria en transición:</b> mercado global de USD 1.640 M (2025) a USD 2.950 M en 2034 (CAGR 6,75%), con desplazamiento regulatorio de desflurano hacia sevoflurano/isoflurano por huella de carbono.</li>
+          <li><b style="color:var(--text-hi)">Nutrición parenteral, alto valor y alta exigencia:</b> compra coordinada ChileCompra 2022 (USD 12,7 M / 17 hospitales) logró 9% de ahorro; la NP domiciliaria es 65–80% más económica que la hospitalaria.</li>
+          <li><b style="color:var(--text-hi)">Matrices hemostáticas, nicho de alto ticket:</b> bajo volumen, alto valor unitario; la venta se decide con evidencia clínico-económica, no con licitación de precio puro.</li>
+          <li><b style="color:var(--text-hi)">Vitaminas hospitalarias:</b> producto de acompañamiento, estratégico para completar paquetes integrados de NP y protocolos de UCI/oncología.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MERCADO -->
+<section class="section" id="mercado">
+  <div class="section-head"><span class="section-index">01</span><h2 class="section-title">Arquitectura del mercado</h2></div>
+  <p class="section-sub">Dos canales institucionales, dos lógicas de decisión. El interlocutor comercial debe cubrir presupuesto, validación clínica y punto de uso a la vez.</p>
+
+  <div class="compare-grid">
+    <div class="compare-card pub">
+      <span class="compare-tag">Canal público</span>
+      <h3>Fonasa / CENABAST</h3>
+      <div class="compare-row"><span class="k">Mecanismo</span><span class="v">ChileCompra, licitaciones coordinadas, convenios marco</span></div>
+      <div class="compare-row"><span class="k">Unidades objetivo</span><span class="v">UPC/UCI, pabellones, oncología, pediatría, hosp. domiciliaria</span></div>
+      <div class="compare-row"><span class="k">Criterio dominante</span><span class="v">Costo total, continuidad de suministro, cumplimiento normativo</span></div>
+      <div class="compare-row"><span class="k">Ciclo de venta</span><span class="v">Largo · calendario de licitaciones públicas</span></div>
+      <div class="compare-row"><span class="k">Decisores</span><span class="v">Abastecimiento, jefatura de farmacia, comités farmacoterapéuticos</span></div>
+    </div>
+    <div class="compare-card priv">
+      <span class="compare-tag">Canal privado</span>
+      <h3>Isapres / clínicas</h3>
+      <div class="compare-row"><span class="k">Mecanismo</span><span class="v">Licitaciones privadas, convenios directos, acuerdos centralizados</span></div>
+      <div class="compare-row"><span class="k">Unidades objetivo</span><span class="v">Pabellones quirúrgicos, UCI, centros ambulatorios de alta complejidad</span></div>
+      <div class="compare-row"><span class="k">Criterio dominante</span><span class="v">Eficiencia operacional, throughput, reducción de complicaciones</span></div>
+      <div class="compare-row"><span class="k">Ciclo de venta</span><span class="v">Medio · negociación directa y pilotos clínicos</span></div>
+      <div class="compare-row"><span class="k">Decisores</span><span class="v">Gerencias médicas, jefaturas de pabellón/UCI, comités de adquisiciones</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- PORTAFOLIO -->
+<section class="section" id="portafolio">
+  <div class="section-head"><span class="section-index">02</span><h2 class="section-title">Portafolio de producto</h2></div>
+  <p class="section-sub">Uso clínico, segmento prioritario y palanca comercial para cada línea. Expande cada producto para el detalle.</p>
+
+  <div data-acc class="acc">
+    <div class="acc-head" data-acc-head>
+      <div class="acc-head-left">
+        <div class="acc-badge">01</div>
+        <div class="acc-titles">
+          <div class="acc-title">Suero fisiológico (250 / 500 / 1.000 / 3.000 ml)</div>
+          <div class="acc-meta">Insumo de mayor rotación hospitalaria</div>
+        </div>
+      </div>
+      <div class="acc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div>
+    </div>
+    <div class="acc-panel">
+      <div class="acc-body">
+        <p>Uso estructural en restauración del equilibrio iónico, dilución de fármacos, fluidoterapia e irrigación. Las guías clínicas recomiendan 2.000–3.000 ml/día en pacientes hospitalizados, confirmando un volumen de uso recurrente.</p>
+        <p><b style="color:var(--text-hi)">Racional comercial:</b> producto de altísima demandabilidad; la decisión se juega en precio, confiabilidad de suministro, formatos diferenciados y ventajas logísticas (peso, embalaje, gestión de residuos).</p>
+        <div class="pill-row">
+          <span class="pill demand-high">DEMANDA · ALTÍSIMA</span>
+          <span class="pill channel">Fonasa: urgencia / pabellón / UCI</span>
+          <span class="pill channel">Privado: clínicas UCI/pabellón</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div data-acc class="acc">
+    <div class="acc-head" data-acc-head>
+      <div class="acc-head-left">
+        <div class="acc-badge">02</div>
+        <div class="acc-titles">
+          <div class="acc-title">Anestesia inhalatoria — sevoflurano, isoflurano, desflurano</div>
+          <div class="acc-meta">Mercado global USD 1.640 M (2025) → USD 2.950 M (2034)</div>
+        </div>
+      </div>
+      <div class="acc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div>
+    </div>
+    <div class="acc-panel">
+      <div class="acc-body">
+        <p>CAGR 6,75% impulsado por actividad quirúrgica y nuevas tecnologías de administración. La Federación Mundial de Sociedades de Anestesiología recomienda reducir progresivamente el desflurano por su huella de carbono, priorizando sevoflurano e isoflurano con flujos bajos.</p>
+        <p><b style="color:var(--text-hi)">Racional comercial:</b> demanda estable a creciente en sevoflurano; ventana de posicionamiento en sostenibilidad clínica (baja huella de carbono) y eficiencia mediante sistemas de bajo flujo.</p>
+        <div class="pill-row">
+          <span class="pill demand-mid">DEMANDA · ESTABLE / CRECIENTE</span>
+          <span class="pill channel">Fonasa: pabellones complejos</span>
+          <span class="pill channel">Privado: cirugía mayor ambulatoria</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div data-acc class="acc">
+    <div class="acc-head" data-acc-head>
+      <div class="acc-head-left">
+        <div class="acc-badge">03</div>
+        <div class="acc-titles">
+          <div class="acc-title">Nutrición parenteral "ready-to-use"</div>
+          <div class="acc-meta">USD 12,7 M · 17 hospitales · 9% de ahorro (ChileCompra 2022)</div>
+        </div>
+      </div>
+      <div class="acc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div>
+    </div>
+    <div class="acc-panel">
+      <div class="acc-body">
+        <p>Usada principalmente en UCI, UCI intermedia, cirugía y oncología. La NP domiciliaria resulta 65–80% más económica que la hospitalaria, reforzando el atractivo de formatos listos para usar.</p>
+        <p><b style="color:var(--text-hi)">Racional comercial:</b> alta barrera de entrada, alta demandabilidad; se gana con calidad, estabilidad, soporte clínico y propuesta de costo total (logística + soporte técnico).</p>
+        <div class="pill-row">
+          <span class="pill demand-high">DEMANDA · SOFISTICADA</span>
+          <span class="pill channel">Fonasa: alta complejidad / paciente crítico</span>
+          <span class="pill channel">Privado: hosp. domiciliaria / oncología</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div data-acc class="acc">
+    <div class="acc-head" data-acc-head>
+      <div class="acc-head-left">
+        <div class="acc-badge">04</div>
+        <div class="acc-titles">
+          <div class="acc-title">Vitaminas parenterales y orales hospitalarias</div>
+          <div class="acc-meta">Complemento estratégico de la NP</div>
+        </div>
+      </div>
+      <div class="acc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div>
+    </div>
+    <div class="acc-panel">
+      <div class="acc-body">
+        <p>Parte integral de la formulación de NP y de la suplementación en pacientes críticos, oncológicos y geriátricos. En APS, la prescripción oral se asocia a embarazo, infancia, adultos mayores y patologías carenciales.</p>
+        <p><b style="color:var(--text-hi)">Racional comercial:</b> mercado más competitivo que suero o anestesia; viable si se vincula a soluciones integrales de NP o protocolos clínicos, en vez de venderse como commodity aislado.</p>
+        <div class="pill-row">
+          <span class="pill demand-mid">DEMANDA · SOSTENIDA / COMPETITIVA</span>
+          <span class="pill channel">UCI / NP / oncología</span>
+          <span class="pill channel">APS / geriatría</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div data-acc class="acc">
+    <div class="acc-head" data-acc-head>
+      <div class="acc-head-left">
+        <div class="acc-badge">05</div>
+        <div class="acc-titles">
+          <div class="acc-title">Matrices hemostáticas</div>
+          <div class="acc-meta">Alto valor unitario, decisión basada en evidencia</div>
+        </div>
+      </div>
+      <div class="acc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div>
+    </div>
+    <div class="acc-panel">
+      <div class="acc-body">
+        <p>Control de sangrado en cirugía abierta, laparoscópica, trauma y neurocirugía. La evidencia internacional muestra reducción de tiempo quirúrgico, transfusiones y complicaciones, lo que se traduce en ahorro hospitalario en un contexto donde pabellón y UCI son recursos caros y escasos.</p>
+        <p><b style="color:var(--text-hi)">Racional comercial:</b> alto valor unitario y baja rotación relativa; la llave de entrada es la evidencia clínica y farmacoeconómica presentada directamente a los comités de compra.</p>
+        <div class="pill-row">
+          <span class="pill demand-niche">DEMANDA · NICHO DE ALTO VALOR</span>
+          <span class="pill channel">Fonasa: cirugía / neurocirugía</span>
+          <span class="pill channel">Privado: clínicas de trauma</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section class="section" id="roadmap">
+  <div class="section-head"><span class="section-index">03</span><h2 class="section-title">Hoja de ruta comercial por canal</h2></div>
+  <p class="section-sub">Objetivos y líneas de acción diferenciadas para Fonasa y para el segmento privado.</p>
+
+  <div class="roadmap-grid">
+    <div data-acc class="acc open">
+      <div class="acc-head" data-acc-head>
+        <div class="acc-head-left">
+          <div class="acc-badge" style="background:rgba(0,234,255,.12); border-color:rgba(0,234,255,.3);">FO</div>
+          <div class="acc-titles">
+            <div class="acc-title">Fonasa / red pública</div>
+            <div class="acc-meta">Costo total y continuidad de suministro</div>
+          </div>
+        </div>
+        <div class="acc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div>
+      </div>
+      <div class="acc-panel">
+        <div class="acc-body">
+          <p><b style="color:var(--text-hi)">Objetivo:</b> posicionar el portafolio como solución integral para pabellón, UCI y NP.</p>
+          <ul>
+            <li>Participar en licitaciones coordinadas y convenios marco, replicando el modelo NP (USD 12,7 M, 17 hospitales, 9% ahorro).</li>
+            <li>Dosier farmacoeconómico de suero: costos logísticos por formato y reducción de quiebres de stock.</li>
+            <li>Dosier de NP ready-to-use: ahorro en preparación, errores e infecciones vs. magistrales.</li>
+            <li>Casos de uso de matriz hemostática: reducción de tiempo quirúrgico y días cama.</li>
+            <li>Alianzas con sociedades científicas para protocolos y talleres formativos.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div data-acc class="acc open">
+      <div class="acc-head" data-acc-head>
+        <div class="acc-head-left">
+          <div class="acc-badge" style="background:rgba(255,110,168,.12); border-color:rgba(255,110,168,.3); color:var(--magenta);">PR</div>
+          <div class="acc-titles">
+            <div class="acc-title">Privado / Isapres · clínicas</div>
+            <div class="acc-meta">Eficiencia de pabellón y menos complicaciones</div>
+          </div>
+        </div>
+        <div class="acc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div>
+      </div>
+      <div class="acc-panel">
+        <div class="acc-body">
+          <p><b style="color:var(--text-hi)">Objetivo:</b> vender sobre la base de throughput, menos complicaciones y modelo híbrido de atención.</p>
+          <ul>
+            <li>Paquete de pabellón: anestesia inhalatoria + matriz hemostática + suero quirúrgico.</li>
+            <li>Paquete de UCI: NP ready-to-use + sueros de gran volumen + vitaminas parenterales.</li>
+            <li>Cuantificar impacto financiero: throughput, días cama, reintervención.</li>
+            <li>Modelos de riesgo compartido: descuentos por volumen y abastecimiento continuo.</li>
+            <li>Soporte de formación continua para equipos clínicos.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROGRAMA -->
+<section class="section" id="programa">
+  <div class="section-head"><span class="section-index">04</span><h2 class="section-title">Programa de promoción técnico-científica</h2></div>
+  <p class="section-sub">Cuatro fases secuenciales que combinan evidencia, educación médica y negociación comercial.</p>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div data-acc class="acc">
+        <div class="acc-head" data-acc-head>
+          <div class="acc-head-left">
+            <div class="acc-badge">F1</div>
+            <div class="acc-titles"><div class="acc-title">Insight y validación clínica</div><div class="acc-meta">Diagnóstico de terreno</div></div>
+          </div>
+          <div class="acc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <div class="acc-panel"><div class="acc-body"><p>Entrevistas con jefaturas de anestesia, cirugía, UCI, farmacia hospitalaria y nutrición para mapear protocolos, marcas instaladas y puntos de dolor (quiebres de stock, tiempos de preparación, complicaciones). Revisión de guías nacionales del ISP y Minsal sobre NP, fluidoterapia y anestésicos.</p></div></div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div data-acc class="acc">
+        <div class="acc-head" data-acc-head>
+          <div class="acc-head-left">
+            <div class="acc-badge">F2</div>
+            <div class="acc-titles"><div class="acc-title">Educación y evidencia</div><div class="acc-meta">Construcción de credibilidad clínica</div></div>
+          </div>
+          <div class="acc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <div class="acc-panel"><div class="acc-body"><p>Webinars con anestesiólogos sobre la transición de desflurano a sevoflurano/isoflurano; talleres con equipos de NP sobre fórmulas prellenadas; simposios en congresos de cirugía/neurocirugía centrados en resultados clínico-económicos de matrices hemostáticas.</p></div></div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div data-acc class="acc">
+        <div class="acc-head" data-acc-head>
+          <div class="acc-head-left">
+            <div class="acc-badge">F3</div>
+            <div class="acc-titles"><div class="acc-title">Acceso y pricing</div><div class="acc-meta">Adaptación a cada canal</div></div>
+          </div>
+          <div class="acc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <div class="acc-panel"><div class="acc-body"><p>Fonasa/ChileCompra: ajuste de envases y empaquetamiento a bodegas públicas y cadena de frío, destacando el benchmark de 9% de ahorro en compras coordinadas de NP. Clínicas: contrato multianual, descuentos por volumen y soporte de instalación y formación.</p></div></div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div data-acc class="acc">
+        <div class="acc-head" data-acc-head>
+          <div class="acc-head-left">
+            <div class="acc-badge">F4</div>
+            <div class="acc-titles"><div class="acc-title">Seguimiento y KPIs</div><div class="acc-meta">Medición y ajuste continuo</div></div>
+          </div>
+          <div class="acc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <div class="acc-panel"><div class="acc-body"><p>Monitoreo de licitaciones ganadas vs. convocadas, volumen vendido por línea y tipo de establecimiento, e indicadores clínico-económicos: tiempos de pabellón, días cama, tasa de reintervención, adopción de NP prellenada vs. magistral.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KPIs -->
+<section class="section" id="kpis">
+  <div class="section-head"><span class="section-index">05</span><h2 class="section-title">Indicadores de gestión comercial</h2></div>
+  <p class="section-sub">Panel de seguimiento sugerido para el equipo comercial y para reporte a dirección.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-top"><div class="kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><span class="kpi-freq">Trimestral</span></div>
+      <div class="kpi-name">Tasa de adjudicación</div>
+      <div class="kpi-desc">Licitaciones ganadas / licitaciones convocadas.</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top"><div class="kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-4"/></svg></div><span class="kpi-freq">Mensual</span></div>
+      <div class="kpi-name">Volumen por línea y canal</div>
+      <div class="kpi-desc">Unidades vendidas por producto y tipo de establecimiento.</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top"><div class="kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><span class="kpi-freq">Semestral</span></div>
+      <div class="kpi-name">Ahorro documentado</div>
+      <div class="kpi-desc">Reducción de costo total vs. referencia o alternativa previa.</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top"><div class="kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><span class="kpi-freq">Semestral</span></div>
+      <div class="kpi-name">Impacto clínico-económico</div>
+      <div class="kpi-desc">Tiempos de pabellón, días cama y tasa de reintervención en cuentas clave.</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top"><div class="kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div><span class="kpi-freq">Trimestral</span></div>
+      <div class="kpi-name">Adopción de formatos RTU</div>
+      <div class="kpi-desc">% de NP prellenada vs. magistral en cuentas con programa activo.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SINTESIS -->
+<section class="section" id="sintesis">
+  <div class="section-head"><span class="section-index">06</span><h2 class="section-title">Síntesis y foco estratégico</h2></div>
+
+  <div class="synth-list">
+    <div class="synth-item"><span class="synth-name">Suero fisiológico</span><span class="synth-text">Demanda altísima y constante; competir en logística, precio y seguridad de suministro.</span></div>
+    <div class="synth-item"><span class="synth-name">Anestesia inhalatoria</span><span class="synth-text">Crecimiento moderado; capturar el desplazamiento hacia sevoflurano y la salida gradual de desflurano.</span></div>
+    <div class="synth-item"><span class="synth-name">Nutrición RTU</span><span class="synth-text">Segmento sofisticado y sensible al costo total; alta oportunidad con soporte técnico y continuidad.</span></div>
+    <div class="synth-item"><span class="synth-name">Vitaminas hospitalarias</span><span class="synth-text">Ticket menor por unidad, pero clave dentro de paquetes integrados de NP.</span></div>
+    <div class="synth-item"><span class="synth-name">Matrices hemostáticas</span><span class="synth-text">Nicho de alto valor unitario; venta basada en resultados clínicos y farmacoeconomía.</span></div>
+  </div>
+
+  <div class="cta">
+    <div class="cta-box">
+      <h3>Próximo paso sugerido</h3>
+      <p>Convertir esta hoja de ruta en un plan comercial trimestral a 12 meses, con objetivos por segmento, mensajes clave por especialidad y actividades concretas — priorizando una macrozona o un tipo de cliente específico para maximizar foco de ejecución.</p>
+      <a href="#resumen" class="cta-btn">Volver al resumen ejecutivo →</a>
+    </div>
+  </div>
+</section>
+
+<footer>Informe comercial y de market access · Insumos médicos y farmacológicos, Chile · <span>Confidencial — uso interno</span></footer>
+
+<script>
+  // ---------- accordions ----------
+  document.querySelectorAll('[data-acc]').forEach(acc=>{
+    const head = acc.querySelector('[data-acc-head]');
+    const panel = acc.querySelector('.acc-panel');
+    const setHeight = ()=>{ if(acc.classList.contains('open')) panel.style.maxHeight = panel.scrollHeight + 'px'; };
+    if(acc.classList.contains('open')) setHeight();
+    head.addEventListener('click', ()=>{
+      const isOpen = acc.classList.contains('open');
+      if(isOpen){
+        panel.style.maxHeight = panel.scrollHeight + 'px';
+        requestAnimationFrame(()=>{ panel.style.maxHeight = '0px'; });
+        acc.classList.remove('open');
+      } else {
+        acc.classList.add('open');
+        panel.style.maxHeight = panel.scrollHeight + 'px';
+      }
+    });
+    window.addEventListener('resize', ()=>{ if(acc.classList.contains('open')) panel.style.maxHeight = panel.scrollHeight + 'px'; });
+  });
+
+  // ---------- nav active state on scroll ----------
+  const navLinks = document.querySelectorAll('#navlinks a');
+  const sections = [...navLinks].map(a=>document.querySelector(a.getAttribute('href')));
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        const id = '#' + entry.target.id;
+        navLinks.forEach(a=> a.classList.toggle('active', a.getAttribute('href')===id));
+      }
+    });
+  }, { rootMargin: '-40% 0px -50% 0px', threshold: 0 });
+  sections.forEach(s=> s && io.observe(s));
+
+  // ---------- count-up stats ----------
+  const statNums = document.querySelectorAll('.stat-num[data-count]');
+  const animateCount = (el)=>{
+    const target = parseFloat(el.getAttribute('data-count'));
+    const prefix = el.getAttribute('data-prefix') || '';
+    const suffix = el.getAttribute('data-suffix') || '';
+    const decimals = (el.getAttribute('data-count').split('.')[1] || '').length;
+    let start = 0;
+    const dur = 1400;
+    const t0 = performance.now();
+    function step(t){
+      const progress = Math.min((t - t0) / dur, 1);
+      const eased = 1 - Math.pow(1-progress, 3);
+      const val = (target * eased).toFixed(decimals);
+      el.textContent = prefix + val + suffix;
+      if(progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  };
+  const statIO = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        animateCount(entry.target);
+        statIO.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.4 });
+  statNums.forEach(el=> statIO.observe(el));
+</script>
+</body>
+</html>

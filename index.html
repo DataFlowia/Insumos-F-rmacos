@@ -208,6 +208,35 @@
   .compare-row .k{ color:var(--text-dim); flex:0 0 40%; }
   .compare-row .v{ color:var(--text); text-align:right; flex:1; }
 
+  /* ---------- competitor cards ---------- */
+  .comp-note{
+    border-left:3px solid var(--amber); background:linear-gradient(90deg, rgba(255,200,87,.07), transparent 70%);
+    border-radius:0 var(--radius) var(--radius) 0; padding:14px 20px; margin:0 0 22px; font-size:13px; color:var(--text);
+  }
+  .comp-note b{ color:var(--text-hi); }
+  .comp-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media(max-width:780px){ .comp-grid{ grid-template-columns:1fr; } }
+  .comp-card{
+    background:var(--panel); border:1px solid var(--panel-border); border-radius:var(--radius); padding:22px;
+    transition:transform .35s var(--ease), border-color .35s var(--ease), box-shadow .35s var(--ease);
+  }
+  .comp-card:hover{ transform:translateY(-4px); border-color:var(--panel-border-hover); box-shadow:0 16px 36px -18px rgba(0,234,255,.28); }
+  .comp-card h4{ font-size:15.5px; color:var(--text-hi); margin-bottom:4px; }
+  .comp-card .comp-sub{ font-size:12px; color:var(--text-dim); margin-bottom:16px; }
+  .comp-players{ display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .comp-player{ display:flex; align-items:center; gap:10px; }
+  .comp-player-name{ font-size:12.5px; color:var(--text); flex:0 0 128px; flex-shrink:0; }
+  .comp-bar-track{ flex:1; height:8px; border-radius:5px; background:#0c1119; overflow:hidden; border:1px solid var(--panel-border); }
+  .comp-bar-fill{ height:100%; border-radius:5px; background:linear-gradient(90deg, var(--cyan-dim), var(--cyan)); width:0%; transition:width 1.1s var(--ease); }
+  .comp-bar-fill.mag{ background:linear-gradient(90deg, #b03e6f, var(--magenta)); }
+  .comp-bar-fill.grey{ background:linear-gradient(90deg,#3a4553,#5b6b7d); }
+  .comp-bar-fill[data-unknown="1"]{ background-image:repeating-linear-gradient(135deg, rgba(255,255,255,.16) 0 6px, transparent 6px 12px); background-color:#3a4553; background-blend-mode:overlay; }
+  .comp-player-pct{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--cyan-soft); flex:0 0 46px; text-align:right; }
+  .comp-player-pct.unk{ color:var(--text-dim); font-size:10.5px; }
+  .comp-foot{ border-top:1px solid var(--panel-border); padding-top:12px; font-size:12.5px; color:var(--text-dim); }
+  .comp-foot .price-tag{ display:inline-flex; align-items:center; gap:6px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--green); background:rgba(52,224,161,.09); border:1px solid rgba(52,224,161,.25); padding:4px 10px; border-radius:20px; margin-top:8px; }
+  .comp-src{ font-size:10.5px; color:var(--text-dim); margin-top:8px; font-style:italic; }
+
   /* ---------- roadmap columns ---------- */
   .roadmap-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
   @media(max-width:780px){ .roadmap-grid{ grid-template-columns:1fr; } }
@@ -372,6 +401,77 @@
       <div class="compare-row"><span class="k">Decisores</span><span class="v">Gerencias médicas, jefaturas de pabellón/UCI, comités de adquisiciones</span></div>
     </div>
   </div>
+
+  <h3 style="margin-top:40px; font-size:18px; color:var(--text-hi); font-weight:600;">Panorama competitivo y precios referenciales por nicho</h3>
+  <div class="comp-note">
+    <b>Nota metodológica:</b> la participación de mercado en insumos médicos chilenos rara vez es pública. Donde existe una cifra verificable (p. ej. una sentencia judicial) se indica la fuente y el período; en el resto se listan los actores identificados, sin estimar porcentajes. Los precios de licitación pública son confidenciales por contrato y normalmente inferiores a los precios minoristas aquí referenciados.
+  </div>
+
+  <div class="comp-grid">
+
+    <div class="comp-card">
+      <h4>Suero fisiológico</h4>
+      <div class="comp-sub">Cloruro de sodio 0,9% · mercado altamente concentrado</div>
+      <div class="comp-players">
+        <div class="comp-player"><span class="comp-player-name">Sanderson (Fresenius Kabi)</span><div class="comp-bar-track"><div class="comp-bar-fill mag" data-pct="66.5"></div></div><span class="comp-player-pct">66,5%</span></div>
+        <div class="comp-player"><span class="comp-player-name">Baxter</span><div class="comp-bar-track"><div class="comp-bar-fill" data-pct="23.6"></div></div><span class="comp-player-pct">23,6%</span></div>
+        <div class="comp-player"><span class="comp-player-name">B. Braun Medical</span><div class="comp-bar-track"><div class="comp-bar-fill grey" data-pct="9.9"></div></div><span class="comp-player-pct unk">resto</span></div>
+      </div>
+      <div class="comp-foot">
+        Participación según sentencia Corte Suprema (colusión TDLC 2020), licitaciones públicas jul. 2009 – jun. 2012. No representa necesariamente la estructura actual.
+        <br><span class="price-tag">◈ Ref. minorista: $1.990 – $5.990 CLP / 1.000 ml</span>
+        <div class="comp-src">Fuente: FNE / Centro Competencia UAI (CeCo)</div>
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <h4>Anestesia inhalatoria</h4>
+      <div class="comp-sub">Sevoflurano · isoflurano · desflurano</div>
+      <div class="comp-players">
+        <div class="comp-player"><span class="comp-player-name">Baxter</span><div class="comp-bar-track"><div class="comp-bar-fill" data-pct="100" data-unknown="1"></div></div><span class="comp-player-pct unk">sin dato %</span></div>
+        <div class="comp-player"><span class="comp-player-name">BPH S.A.</span><div class="comp-bar-track"><div class="comp-bar-fill grey" data-pct="100" data-unknown="1"></div></div><span class="comp-player-pct unk">sin dato %</span></div>
+        <div class="comp-player"><span class="comp-player-name">AbbVie / Piramal (global)</span><div class="comp-bar-track"><div class="comp-bar-fill mag" data-pct="100" data-unknown="1"></div></div><span class="comp-player-pct unk">sin dato %</span></div>
+      </div>
+      <div class="comp-foot">
+        Baxter es titular del registro sanitario ISP de sevoflurano e isoflurano en Chile; BPH S.A. también registra sevoflurano. No hay participación de mercado pública desagregada por marca.
+        <br><span class="price-tag" style="color:var(--text-dim); background:rgba(255,255,255,.03); border-color:var(--panel-border);">◈ Precio: sujeto a licitación · no público</span>
+        <div class="comp-src">Fuente: Registros ISP / Vademecum Chile</div>
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <h4>Nutrición parenteral</h4>
+      <div class="comp-sub">Bolsas prellenadas + mezcla magistral</div>
+      <div class="comp-players">
+        <div class="comp-player"><span class="comp-player-name">B. Braun Medical</span><div class="comp-bar-track"><div class="comp-bar-fill" data-pct="100" data-unknown="1"></div></div><span class="comp-player-pct unk">3 actores</span></div>
+        <div class="comp-player"><span class="comp-player-name">Baxter</span><div class="comp-bar-track"><div class="comp-bar-fill grey" data-pct="100" data-unknown="1"></div></div><span class="comp-player-pct unk">principales</span></div>
+        <div class="comp-player"><span class="comp-player-name">Fresenius Kabi</span><div class="comp-bar-track"><div class="comp-bar-fill mag" data-pct="100" data-unknown="1"></div></div><span class="comp-player-pct unk">(RTU)</span></div>
+      </div>
+      <div class="comp-foot">
+        + Therapía (central de mezcla individualizada / NP magistral). A nivel global, estos tres grupos concentran ~50% de las ventas mundiales de NP (referencia direccional, no cifra local).
+        <br><span class="price-tag">◈ Compra coordinada 2022: USD 12,7 M / 17 hospitales</span>
+        <div class="comp-src">Fuentes: estudio de mercado UNAB–B. Braun; Mordor Intelligence 2026</div>
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <h4>Matrices hemostáticas</h4>
+      <div class="comp-sub">Control de sangrado en cirugía mayor</div>
+      <div class="comp-players">
+        <div class="comp-player"><span class="comp-player-name">Baxter (Floseal / Tisseel)</span><div class="comp-bar-track"><div class="comp-bar-fill" data-pct="100" data-unknown="1"></div></div><span class="comp-player-pct unk">duopolio</span></div>
+        <div class="comp-player"><span class="comp-player-name">J&J / Ethicon (Surgicel)</span><div class="comp-bar-track"><div class="comp-bar-fill mag" data-pct="100" data-unknown="1"></div></div><span class="comp-player-pct unk">global</span></div>
+        <div class="comp-player"><span class="comp-player-name">CSL Behring / BD / Pfizer</span><div class="comp-bar-track"><div class="comp-bar-fill grey" data-pct="100" data-unknown="1"></div></div><span class="comp-player-pct unk">nicho</span></div>
+      </div>
+      <div class="comp-foot">
+        Sin cifra pública de participación en Chile. Baxter documenta ahorros de hasta USD 1,5 M/año en cirugía cardiaca y USD 2.445 por procedimiento de columna (cifras del propio fabricante).
+        <br><span class="price-tag" style="color:var(--text-dim); background:rgba(255,255,255,.03); border-color:var(--panel-border);">◈ Precio: venta institucional · no público</span>
+        <div class="comp-src">Fuentes: Baxter Advanced Surgery / J&J MedTech</div>
+      </div>
+    </div>
+
+  </div>
+
+  <p style="font-size:12.5px; color:var(--text-dim); margin-top:18px; max-width:70ch;">Vitaminas hospitalarias: mercado fragmentado entre los mismos actores de NP (línea parenteral) y laboratorios genéricos nacionales (línea oral), sin cifras públicas de participación ni de precio institucional consolidado.</p>
 </section>
 
 <!-- PORTAFOLIO -->
@@ -738,6 +838,22 @@
     });
   }, { threshold: 0.4 });
   statNums.forEach(el=> statIO.observe(el));
+
+  // ---------- competitor bars ----------
+  const barFills = document.querySelectorAll('.comp-bar-fill');
+  const barIO = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        const el = entry.target;
+        const isUnknown = el.getAttribute('data-unknown') === '1';
+        const pct = isUnknown ? 45 : parseFloat(el.getAttribute('data-pct'));
+        if(isUnknown) el.style.opacity = '0.55';
+        requestAnimationFrame(()=>{ el.style.width = pct + '%'; });
+        barIO.unobserve(el);
+      }
+    });
+  }, { threshold: 0.3 });
+  barFills.forEach(el=> barIO.observe(el));
 </script>
 </body>
 </html>
